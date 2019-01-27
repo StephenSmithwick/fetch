@@ -1,0 +1,92 @@
+buildscript {
+	ext {
+		kotlinVersion = '1.3.20'
+		springBootVersion = '2.1.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
+		classpath("org.jetbrains.kotlin:kotlin-noarg:${kotlinVersion}")
+	}
+}
+
+configurations {
+	ktlint
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: 'kotlin-jpa'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'au.com.smithwick'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+	jcenter()
+}
+
+dependencies {
+	ktlint "com.github.shyiko:ktlint:0.29.0"
+
+	implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+	implementation('org.springframework.boot:spring-boot-starter-webflux')
+	implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+	implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8')
+	implementation('org.jetbrains.kotlin:kotlin-reflect')
+	implementation('org.jsoup:jsoup:1.10.1')
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1")
+	implementation('org.springframework.kotlin:spring-kotlin-coroutine:0.3.6')
+
+	runtimeOnly('com.h2database:h2')
+
+	testCompile('org.springframework.boot:spring-boot-starter-test') {
+		exclude module: 'junit'
+	}
+	testImplementation('org.junit.jupiter:junit-jupiter-api')
+	testImplementation('io.projectreactor:reactor-test')
+	testImplementation('io.kotlintest:kotlintest-runner-junit5:3.1.10')
+	testImplementation('org.awaitility:awaitility-kotlin:3.1.6')
+
+	testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
+}
+
+compileKotlin {
+	kotlinOptions {
+		freeCompilerArgs = ['-Xjsr305=strict']
+		jvmTarget = '1.8'
+	}
+}
+
+compileTestKotlin {
+	kotlinOptions {
+		freeCompilerArgs = ['-Xjsr305=strict']
+		jvmTarget = '1.8'
+	}
+}
+
+task ktlint(type: JavaExec, group: "verification") {
+	description = "Check Kotlin code style."
+	main = "com.github.shyiko.ktlint.Main"
+	classpath = configurations.ktlint
+	args "src/**/*.kt"
+}
+check.dependsOn ktlint
+
+task ktlintFormat(type: JavaExec, group: "formatting") {
+	description = "Fix Kotlin code style deviations."
+	main = "com.github.shyiko.ktlint.Main"
+	classpath = configurations.ktlint
+	args "-F", "src/**/*.kt"
+}
+
+test {
+	useJUnitPlatform()
+}
