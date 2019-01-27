@@ -45,12 +45,12 @@ interface JobsRepository : CrudRepository<Job, UUID>
 @RequestMapping("/jobs")
 class JobsController(
     @Autowired val repository: JobsRepository,
-    @Autowired val fetchService: FetchService
+    @Autowired val fetchJobService: FetchJobService
 ) {
     @PostMapping
     fun create(@RequestBody jobRequest: JobRequest): Job {
         val job = repository.save(Job(urls = jobRequest.urls))
-        fetchService.start(job)
+        fetchJobService.start(job)
         return job
     }
 

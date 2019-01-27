@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import java.util.UUID
-import javax.persistence.*
+import javax.persistence.Embeddable
+import javax.persistence.Embedded
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.OneToMany
 import javax.persistence.FetchType.EAGER
 import javax.transaction.Transactional
 
@@ -19,19 +23,19 @@ import javax.transaction.Transactional
 
 @Entity
 data class URLDetail(
-        val url : String,
-        val title : String?,
-        val tlsAvailable : Boolean,
-        val tlsOnly : Boolean
+    val url: String,
+    val title: String?,
+    val tlsAvailable: Boolean,
+    val tlsOnly: Boolean
 ) {
     @Id val id: UUID = UUID.randomUUID()
 }
 
 @Entity
 data class Result(
-        @Id val id: UUID = UUID.randomUUID(),
-        @OneToMany(fetch = EAGER) val results: List<URLDetail>,
-        val jobId: UUID
+    @Id val id: UUID = UUID.randomUUID(),
+    @OneToMany(fetch = EAGER) val results: List<URLDetail>,
+    val jobId: UUID
 ) {
     @Embedded val links = ResultLinks(
             self = "/results/$id",
@@ -40,6 +44,9 @@ data class Result(
 
 @Transactional(Transactional.TxType.MANDATORY)
 interface ResultsRepository : CrudRepository<Result, UUID>
+
+@Transactional(Transactional.TxType.MANDATORY)
+interface URLDetailRepository : CrudRepository<URLDetail, UUID>
 
 @RestController @RequestMapping("/results") class ResultsController(
     @Autowired val repository: ResultsRepository

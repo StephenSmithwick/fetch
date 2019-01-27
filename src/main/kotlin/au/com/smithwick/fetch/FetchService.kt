@@ -1,83 +1,77 @@
 package au.com.smithwick.fetch
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
+import org.springframework.scheduling.annotation.AsyncResult
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.stereotype.Service
+import org.springframework.util.concurrent.ListenableFuture
 import java.lang.Exception
 import javax.transaction.Transactional
 
+@Service
+@EnableAsync
+open class FetchJobService(
+    @Autowired val resultsRepository: ResultsRepository,
+    @Autowired val jobRepository: JobsRepository,
+    @Autowired val fetchService: FetchService
+) {
+    @Transactional
+    @Async
+    fun start(job: Job) {
+        val results = job.urls.map { fetchService.fetchResults(it) }
+        val result = resultsRepository.save(Result(
+                results = results.map { it.get() },
+                jobId = job.id))
+        jobRepository.save(Job(id = job.id, urls = job.urls, resultId = result.id))
+    }
+}
 
 @Service
-class FetchService(
-    @Autowired val resultsRepository: ResultsRepository,
-    @Autowired val jobRepository: JobsRepository
+@EnableAsync
+open class FetchService(
+    @Autowired val urlDetailRepository: URLDetailRepository
 ) {
-
-    @Transactional
-    fun start(job: Job) {
-        GlobalScope.launch {
-            val results = job.urls.map {
-                async {
-                    fetchResults(it)
-                }
-            }
-
-            runBlocking {
-                val result = resultsRepository.save(Result(
-                        results = results.map { it.await() },
-                        jobId = job.id))
-                jobRepository.save(Job(id = job.id, urls = job.urls, resultId = result.id))
-            }
-        }
-    }
-
-    fun fetchResults(url : String) : URLDetail {
-
+    @Async
+    fun fetchResults(url: String): ListenableFuture<URLDetail> {
         val httpSuported = httpSuported(url)
         val tlsSupported = tlsSuported(url)
         val title = fetchTitle(url)
 
-        return URLDetail(
+        return return AsyncResult.forValue(urlDetailRepository.save(URLDetail(
                 url = url,
                 tlsOnly = tlsSupported && !httpSuported,
                 tlsAvailable = tlsSupported,
                 title = title
-        )
+        )))
     }
 
-    fun httpSuported(url : String) : Boolean {
+    fun httpSuported(url: String): Boolean {
         return try {
             Jsoup.connect("http://$url").header("Accept", "text/html").execute().url().protocol == "http"
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             false
         }
     }
 
-    fun tlsSuported(url : String) : Boolean {
+    fun tlsSuported(url: String): Boolean {
         return try {
             Jsoup.connect("https://$url").header("Accept", "text/html").execute().url().protocol == "https"
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             false
         }
     }
 
-    fun fetchTitle(url : String) : String? {
+    fun fetchTitle(url: String): String? {
         return try {
             Jsoup.connect("http://$url").header("Accept", "text/html").get().title()
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             try {
                 Jsoup.connect("https://$url").header("Accept", "text/html").get().title()
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 null
             }
         }
     }
-
-
 }
-
-

@@ -26,7 +26,7 @@ class ApplicationTests(@Autowired val restTemplate: TestRestTemplate) {
 
         val resultsResponse = restTemplate.getForEntity(resultUri, Result::class.java)
         resultsResponse.body!!.results shouldBe listOf(
-                URLDetail(url = "example.com", title = "title", tlsAvailable = true, tlsOnly = false)
+                URLDetail(url = "example.com", title = "Example Domain", tlsAvailable = true, tlsOnly = false)
         )
     }
 }
