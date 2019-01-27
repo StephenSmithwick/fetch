@@ -49,10 +49,10 @@ Areas where more work is necessary:
   - The fetch tests around `qantas.com` is not currently working as expected
   - The fetch tests should use an internal server to make the tests less brittle
   - Coverage is bit spotty and currently only focusses on the complicated bits
-- The asynchronous coroutines from Kotlin are not quite working correctly
+- The asynchronous coroutines from Kotlin are not quite working correctly within springboot. Further research to see if there is a workaround is required.
 - Error Handling
   - Bad server requests are not well covered by tests and likely have some issues
-  - We do not have any robust mechanisms to deal with issues that come up while running the job such as downstream issues.
+  - We do not have any robust mechanisms to deal with issues that come up while running the job such as downstream issues.  It would be appropriate to consider a Netflix/Hystrix type solution here.
 
 ## Author
 
