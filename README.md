@@ -49,10 +49,14 @@ Areas where more work is necessary:
   - The fetch tests around `qantas.com` is not currently working as expected
   - The fetch tests should use an internal server to make the tests less brittle
   - Coverage is bit spotty and currently only focusses on the complicated bits
-- The asynchronous coroutines from Kotlin are not quite working correctly within springboot. Further research to see if there is a workaround is required.
+- The asynchronous coroutines from Kotlin were not quite working correctly within springboot.  So I settled on Springboot Aync annotations which are meain to be a less effecient. Further research to see if there is a workaround is required.
 - Error Handling
   - Bad server requests are not well covered by tests and likely have some issues
   - We do not have any robust mechanisms to deal with issues that come up while running the job such as downstream issues.  It would be appropriate to consider a Netflix/Hystrix type solution here.
+- Persistence
+  - I chose JPA paired with an in memory H2 db for ease and expedience but given more time I'd explore 1 of 2 paths:
+  1. Cleanup the move persistence out of the box so the processing can be stateless and scale easier.  We don't need to persist the links columns in both jobs and results and we could save potential table lock issues if we do so.
+  2. Embrace the Document nature of the 2 natural object (Jobs and Results) and use a document store.
 
 ## Author
 
