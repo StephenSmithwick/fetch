@@ -11,10 +11,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FetchServiceTests(@Autowired val fetchService: FetchService) {
-    @Test @Disabled
+    @Test
     fun `Correct details are fetched from a url which only server tls`() {
-        fetchService.fetchResults("qantas.com").get() shouldBe URLDetail(
-                url = "qantas.com",
+        fetchService.fetchResults("www.qantas.com").get() shouldBe URLDetail(
+                url = "www.qantas.com",
                 tlsOnly = true,
                 tlsAvailable = true,
                 title = "Fly with Australia’s most popular airline | Qantas AU"

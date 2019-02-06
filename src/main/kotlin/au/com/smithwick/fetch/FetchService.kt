@@ -49,7 +49,7 @@ open class FetchService(
 
     fun httpSuported(url: String): Boolean {
         return try {
-            Jsoup.connect("http://$url").header("Accept", "text/html").execute().url().protocol == "http"
+            connectAcceptHTML("http://$url").execute().url().protocol == "http"
         } catch (e: Exception) {
             false
         }
@@ -57,7 +57,7 @@ open class FetchService(
 
     fun tlsSuported(url: String): Boolean {
         return try {
-            Jsoup.connect("https://$url").header("Accept", "text/html").execute().url().protocol == "https"
+           connectAcceptHTML("https://$url").execute().url().protocol == "https"
         } catch (e: Exception) {
             false
         }
@@ -65,13 +65,15 @@ open class FetchService(
 
     fun fetchTitle(url: String): String? {
         return try {
-            Jsoup.connect("http://$url").header("Accept", "text/html").get().title()
+            connectAcceptHTML("http://$url").get().title()
         } catch (e: Exception) {
             try {
-                Jsoup.connect("https://$url").header("Accept", "text/html").get().title()
+                connectAcceptHTML("https://$url").get().title()
             } catch (e: Exception) {
                 null
             }
         }
     }
+
+    fun connectAcceptHTML(url: String) = Jsoup.connect(url).header("Accept", "text/html")
 }
